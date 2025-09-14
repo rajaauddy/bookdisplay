@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Mobile Image Slider</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body, html {
+      height: 100%;
+      font-family: Arial, sans-serif;
+      background: #000;
+    }
+
+    .slider-container {
+      position: relative;
+      width: 100%;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    .slider {
+      display: flex;
+      height: 100%;
+      transition: transform 0.3s ease-in-out;
+    }
+
+    .slide {
+      min-width: 100%;
+      height: 100%;
+      background-size: cover;
+      background-position: center;
+      flex-shrink: 0;
+    }
+
+    .control-button {
+      position: absolute;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      padding: 12px 24px;
+      background: rgba(255, 255, 255, 0.8);
+      border: none;
+      border-radius: 25px;
+      font-size: 16px;
+      cursor: pointer;
+      z-index: 10;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="slider-container" id="sliderContainer">
+    <div class="slider" id="slider">
+      <div class="slide" style="background-image: url('img1.jpg');"></div>
+      <div class="slide" style="background-image: url('img2.jpg');"></div>
+      <div class="slide" style="background-image: url('img3.jpg');"></div>
+    </div>
+    <button class="control-button" id="controlButton">Stop</button>
+  </div>
+
+  <script>
+    const slider = document.getElementById('slider');
+    const controlButton = document.getElementById('controlButton');
+    const totalSlides = slider.children.length;
+    let currentIndex = 0;
+    let interval;
+    let autoSlide = true;
+
+    function showSlide(index) {
+      slider.style.transform = `translateX(-${index * 100}%)`;
+    }
+
+    function startAutoSlide() {
+      interval = setInterval(() => {
+        currentIndex = (currentIndex + 1) % totalSlides;
+        showSlide(currentIndex);
+      }, 3000);
+    }
+
+    function stopAutoSlide() {
+      clearInterval(interval);
+    }
+
+    controlButton.addEventListener('click', () => {
+      if (autoSlide) {
+        stopAutoSlide();
+        controlButton.textContent = "Start";
+      } else {
+        startAutoSlide();
+        controlButton.textContent = "Stop";
+      }
+      autoSlide = !autoSlide;
+    });
+
+    // Start auto sliding on load
+    startAutoSlide();
+
+    // --- Swipe Support (Touch Events) ---
+    let startX = 0;
+    let isDragging = false;
+
+    const sliderContainer = document.getElementById('sliderContainer');
+
+    sliderContainer.addEventListener('touchstart', (e) => {
+      startX = e.touches[0].clientX;
+      isDragging = true;
+      stopAutoSlide(); // pause auto-slide on user interaction
+    });
+
+    sliderContainer.addEventListener('touchmove', (e) => {
+      if (!isDragging) return;
+      const currentX = e.touches[0].clientX;
+      const diff = currentX - startX;
+
+      // Don't move more than one slide visually; just cancel if moved too far
+      if (Math.abs(diff) > 50) {
+        isDragging = false;
+        if (diff < 0 && currentIndex < totalSlides - 1) {
+          currentIndex++;
+        } else if (diff > 0 && currentIndex > 0) {
+          currentIndex--;
+        }
+        showSlide(currentIndex);
+      }
+    });
+
+    sliderContainer.addEventListener('touchend', () => {
+      isDragging = false;
+      if (autoSlide) {
+        startAutoSlide();
+      }
+    });
+  </script>
+
+</body>
+</html>
